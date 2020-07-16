@@ -27,16 +27,10 @@ REGION_WIDTH = 250
 REGION_HEIGHT = 24
 
 #Buttons
-BUTTON_PROFILE = "res/profile_button.png"
-BUTTON_SIGNUP = "res/signup_button.png"
+BUTTON_HOME = "res/home_button.png"
 BUTTON_ADD_ACCOUNT = "res/add_account_button.png"
-BUTTON_USERNAME = "res/username_button.png"
-BUTTON_EMAIL = "res/email_button.png"
-BUTTON_LARGE_LOGIN = "res/large_login_button.png"
 BUTTON_CAPTCHA_REFRESH = "res/refresh_captcha.png"
-BUTTON_OPTION = "res/option_button.png"
 BUTTON_LOGOUT = "res/logout_button.png"
-BUTTON_LOGOUT_CONFIRM = "res/logout_confirm_button.png"
 BUTTON_FOLLOW = "res/follow_button.png"
 
 class Tikybot():
@@ -61,6 +55,14 @@ class Tikybot():
         self.ui_control.write(password)
 
         self.ui_control.click_on_position(coordinates.LOGIN_BUTTON)
+        time.sleep(2)
+
+        #verify login
+        home_button = self.ui_control.find_image(BUTTON_HOME)
+
+        if home_button is not None:
+            print("Successfully logged in")
+            return True
 
         return self.bypass_verification()
 
