@@ -1,64 +1,34 @@
 from uicontrol import UiControl
-import coordinates
+import constants
 import time
 import random
-
-from PIL import Image
-
-#Those values depends on screen resolution and emulator position
-
-#Captcha verification
-CAPTCHA_MIN_X = 160
-CAPTCHA_MAX_X = 338
-CAPTCHA_MIN_Y = 360
-CAPTCHA_MAX_Y = 505
-INITIAL_MOUSE_POSITION_X = 109
-INITIAL_MOUSE_POSITION_Y = 432
-MOUSE_MOVE_SPEED = 2
-
-#Screen elements positions
-MOUSE_FIRST_SEARCH_USER_X = 90
-MOUSE_FIRST_SEARCH_USER_Y = 225
-
-REGION_X_OFFSET = 290
-REGION_Y_OFFSET_USERID = 7
-REGION_Y_OFFSET_USERNAME = 11
-REGION_WIDTH = 250
-REGION_HEIGHT = 24
-
-#Buttons
-BUTTON_HOME = "res/home_button.png"
-BUTTON_ADD_ACCOUNT = "res/add_account_button.png"
-BUTTON_CAPTCHA_REFRESH = "res/refresh_captcha.png"
-BUTTON_LOGOUT = "res/logout_button.png"
-BUTTON_FOLLOW = "res/follow_button.png"
 
 class Tikybot():
 
     def __init__(self, x=0):
         self.x = x
         self.ui_control = UiControl()
-        self.ui_control.focus()
+        self.ui_control.focus(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y)
 
     def login(self, username, password):
 
         print("Performing login for account " + username + "...")
 
-        self.ui_control.click_on_position(coordinates.PROFILE_BUTTON)
-        self.ui_control.click_on_position(coordinates.SIGNUP_BUTTON)
-        self.ui_control.click_on_image_file(BUTTON_ADD_ACCOUNT)
-        self.ui_control.click_on_position(coordinates.USERNAME_BUTTON)
-        self.ui_control.click_on_position(coordinates.EMAIL_BUTTON)
+        self.ui_control.click_on_position(constants.PROFILE_BUTTON)
+        self.ui_control.click_on_position(constants.SIGNUP_BUTTON)
+        self.ui_control.click_on_image_file(constants.BUTTON_ADD_ACCOUNT)
+        self.ui_control.click_on_position(constants.USERNAME_BUTTON)
+        self.ui_control.click_on_position(constants.EMAIL_BUTTON)
 
         self.ui_control.write(username)
         self.ui_control.press_enter()
         self.ui_control.write(password)
 
-        self.ui_control.click_on_position(coordinates.LOGIN_BUTTON)
-        time.sleep(2)
+        self.ui_control.click_on_position(constants.LOGIN_BUTTON)
+        time.sleep(constants.WAIT_FOR_CAPTCHA)
 
-        #verify login
-        home_button = self.ui_control.find_image(BUTTON_HOME)
+        # verify login
+        home_button = self.ui_control.find_image(constants.BUTTON_HOME)
 
         if home_button is not None:
             print("Successfully logged in")
@@ -66,7 +36,7 @@ class Tikybot():
 
         return self.bypass_verification()
 
-    def bypass_verification(self, attempts_number=3):
+    def bypass_verification(self, attempts_number=constants.CAPTCHA_ATTEMPT_COUNT):
 
         print("Performing bypass captcha verification...")
 
@@ -74,18 +44,18 @@ class Tikybot():
         while current_attempt < attempts_number:
             print("Attempt: " + str(current_attempt + 1))
 
-            for x in range(1, 11):
+            for x in range(1, constants.PUZZLE_IMAGES_COUNT):
                 puzzle_name = "res/puzzle" + str(x) + ".png"
-                result = self.ui_control.find_image(puzzle_name, confidence=0.6)
+                result = self.ui_control.find_image(puzzle_name, confidence=constants.CAPTCHA_CONFIDENCE)
 
-                if result is not None and CAPTCHA_MIN_X < result.left < CAPTCHA_MAX_X\
-                        and CAPTCHA_MIN_Y < result.top < CAPTCHA_MAX_Y:
-                    self.ui_control.drag_and_drop(INITIAL_MOUSE_POSITION_X, INITIAL_MOUSE_POSITION_Y,
-                                                  result.left, INITIAL_MOUSE_POSITION_Y)
+                if result is not None and constants.CAPTCHA_MIN_X < result.left < constants.CAPTCHA_MAX_X\
+                        and constants.CAPTCHA_MIN_Y < result.top < constants.CAPTCHA_MAX_Y:
+                    self.ui_control.drag_and_drop(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y,
+                                                  result.left, constants.INITIAL_MOUSE_POSITION_Y)
                     print("Successfully logged in")
                     return True
 
-            self.ui_control.click_on_image_file(BUTTON_CAPTCHA_REFRESH)
+            self.ui_control.click_on_image_file(constants.BUTTON_CAPTCHA_REFRESH)
             current_attempt += 1
 
         return False
@@ -93,10 +63,10 @@ class Tikybot():
     def logout(self):
 
         print("Performing logout...")
-        self.ui_control.click_on_position(coordinates.PROFILE_BUTTON)
-        self.ui_control.click_on_position(coordinates.OPTION_BUTTON)
-        self.ui_control.scroll_for_click(BUTTON_LOGOUT)
-        self.ui_control.click_on_position(coordinates.LOGOUT_BUTTON)
+        self.ui_control.click_on_position(constants.PROFILE_BUTTON)
+        self.ui_control.click_on_position(constants.OPTION_BUTTON)
+        self.ui_control.scroll_for_click(constants.BUTTON_LOGOUT, constants.DEFAULT_SCROLL_SIZE)
+        self.ui_control.click_on_position(constants.LOGOUT_BUTTON)
 
     def debug_mouse_position(self):
         self.ui_control.debug_mouse_position()
@@ -105,26 +75,26 @@ class Tikybot():
 
         print("Performing following followers...")
 
-        self.ui_control.click_on_position(coordinates.DISCOVER_BUTTON)
-        self.ui_control.click_on_position(coordinates.SEARCH_BAR)
+        self.ui_control.click_on_position(constants.DISCOVER_BUTTON)
+        self.ui_control.click_on_position(constants.SEARCH_BAR)
         self.ui_control.write(username)
-        self.ui_control.click_on_position(coordinates.SEARCH_BUTTON)
+        self.ui_control.click_on_position(constants.SEARCH_BUTTON)
 
-        time.sleep(3)
-        self.ui_control.click_on_position(coordinates.FIRST_USER_IN_LIST)
-        self.ui_control.click_on_position(coordinates.FOLLOWERS_BUTTON)
-        time.sleep(2)
+        time.sleep(constants.WAIT_FOR_SEARCH_USER_RESULTS)
+        self.ui_control.click_on_position(constants.FIRST_USER_IN_LIST)
+        self.ui_control.click_on_position(constants.FOLLOWERS_BUTTON)
+        time.sleep(constants.WAIT_FOR_FOLLOWERS_RESULT)
 
         current_follow_count = 0
         while current_follow_count < amount:
-            success = self.ui_control.scroll_for_find(BUTTON_FOLLOW)
+            success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOW, constants.DEFAULT_SCROLL_SIZE)
             if success:
                 #Get userid
-                userid_region = (success.left - REGION_X_OFFSET, success.top - REGION_Y_OFFSET_USERID, REGION_WIDTH, REGION_HEIGHT)
+                userid_region = (success.left - constants.REGION_X_OFFSET, success.top - constants.REGION_Y_OFFSET_USERID, constants.REGION_WIDTH, constants.REGION_HEIGHT)
                 userid = self.ui_control.read_text_in_region(userid_region)
                 print("username - " + userid)
                 #get username
-                username_region = (success.left - REGION_X_OFFSET, success.top + REGION_Y_OFFSET_USERNAME, REGION_WIDTH, REGION_HEIGHT)
+                username_region = (success.left - constants.REGION_X_OFFSET, success.top + constants.REGION_Y_OFFSET_USERNAME, constants.REGION_WIDTH, constants.REGION_HEIGHT)
                 username = self.ui_control.read_text_in_region(username_region)
                 print("name - " + username)
 
@@ -132,38 +102,41 @@ class Tikybot():
                     self.ui_control.click_on_image(success)
                     current_follow_count += 1
 
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.HOME_BUTTON)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.HOME_BUTTON)
 
     def watch_feed_videos(self, amount):
+
+        print("Performing whatch videos for amount >>" + amount + "<< ...")
+
         current_count = 0
         while current_count < amount:
-            self.ui_control.scroll_screen_up(10)
-            time.sleep(random.randrange(15,20))
+            self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
+            time.sleep(random.randrange(constants.RANDOM_MIN_WAIT_WATCH_VIDEO, constants.RANDOM_MAX_WAIT_WATCH_VIDEO))
             current_count += 1
 
     def like_by_hashtag(self, hashtag):
 
         print("Performing like by hashtag >>" + hashtag + "<< ...")
 
-        self.ui_control.click_on_position(coordinates.DISCOVER_BUTTON)
-        self.ui_control.click_on_position(coordinates.SEARCH_BAR)
+        self.ui_control.click_on_position(constants.DISCOVER_BUTTON)
+        self.ui_control.click_on_position(constants.SEARCH_BAR)
         self.ui_control.write("#" + hashtag)
-        self.ui_control.click_on_position(coordinates.SEARCH_BUTTON)
+        self.ui_control.click_on_position(constants.SEARCH_BUTTON)
 
-        time.sleep(2)
-        self.ui_control.click_on_position(coordinates.FIRST_HASHTAG_IN_LIST)
-        self.ui_control.click_on_position(coordinates.FIRST_VIDEO_IN_HASGTAG_RESULT)
+        time.sleep(constants.WAIT_FOR_HASHTAG_RESULTS)
+        self.ui_control.click_on_position(constants.FIRST_HASHTAG_IN_LIST)
+        self.ui_control.click_on_position(constants.FIRST_VIDEO_IN_HASHTAG_RESULT)
         #DO LIKE AND RETRIEVE USER
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.SECOND_VIDEO_IN_HASGTAG_RESULT)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.SECOND_VIDEO_IN_HASHTAG_RESULT)
         # DO LIKE AND RETRIEVE USER
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.THIRD_VIDEO_IN_HASGTAG_RESULT)
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.THIRD_VIDEO_IN_HASHTAG_RESULT)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
 
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(coordinates.HOME_BUTTON)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+        self.ui_control.click_on_position(constants.HOME_BUTTON)
