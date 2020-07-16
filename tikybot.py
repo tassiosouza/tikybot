@@ -90,15 +90,19 @@ class Tikybot():
             success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOW, constants.DEFAULT_SCROLL_SIZE)
             if success:
                 #Get userid
-                userid_region = (success.left - constants.REGION_X_OFFSET, success.top - constants.REGION_Y_OFFSET_USERID, constants.REGION_WIDTH, constants.REGION_HEIGHT)
+                userid_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
+                                 success.top - constants.REGION_Y_OFFSET_USERID,
+                                 constants.REGION_WIDTH, constants.REGION_HEIGHT)
                 userid = self.ui_control.read_text_in_region(userid_region)
                 print("username - " + userid)
                 #get username
-                username_region = (success.left - constants.REGION_X_OFFSET, success.top + constants.REGION_Y_OFFSET_USERNAME, constants.REGION_WIDTH, constants.REGION_HEIGHT)
+                username_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
+                                   success.top + constants.REGION_Y_OFFSET_USERNAME,
+                                   constants.REGION_WIDTH, constants.REGION_HEIGHT)
                 username = self.ui_control.read_text_in_region(username_region)
                 print("name - " + username)
 
-                if(username is not None and userid is not None):
+                if(username is not "" and userid is not ""):
                     self.ui_control.click_on_image(success)
                     current_follow_count += 1
 
@@ -109,7 +113,7 @@ class Tikybot():
 
     def watch_feed_videos(self, amount):
 
-        print("Performing whatch videos for amount >>" + amount + "<< ...")
+        print("Performing whatch videos for amount >>" + str(amount) + "<< ...")
 
         current_count = 0
         while current_count < amount:

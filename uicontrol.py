@@ -2,6 +2,7 @@ import pyautogui
 import time
 import pytesseract
 import constants
+import random
 
 class UiControl:
 
@@ -14,21 +15,19 @@ class UiControl:
         pyautogui.click(INITIAL_MOUSE_POSITION_X, INITIAL_MOUSE_POSITION_Y)
         time.sleep(constants.CLICK_IMAGE_DELAY)
 
-    @staticmethod
-    def click_on_image_file(image_name):
+    def click_on_image_file(self, image_name):
         button = pyautogui.locateOnScreen(image_name, confidence=0.8)
-        time.sleep(constants.CLICK_IMAGE_DELAY)
-        if button is not None:
-            pyautogui.click(button)
-            time.sleep(constants.CLICK_IMAGE_DELAY)
-        else:
-            print("Could not find button image - " + image_name)
+        self.click_on_image(button)
 
-    @staticmethod
-    def click_on_image(image):
+    def click_on_image(self, image):
         time.sleep(constants.CLICK_IMAGE_DELAY)
         if image is not None:
-            pyautogui.click(image)
+            if constants.IS_RETINA_DISPLAY:
+                x = image.left / constants.RETINA_POS_FACTOR + image.width / constants.RETINA_SIZE_FACTOR
+                y = image.top / constants.RETINA_POS_FACTOR + image.height / constants.RETINA_SIZE_FACTOR
+                self.click_on_position((x, y))
+            else:
+                pyautogui.click(image)
             time.sleep(constants.CLICK_IMAGE_DELAY)
         else:
             print("Could not find button image - " + image)
@@ -65,8 +64,7 @@ class UiControl:
             print("Could not find image - " + image_name)
             return None
 
-    @staticmethod
-    def scroll_for_click(image_name, scroll_size):
+    def scroll_for_click(self, image_name, scroll_size):
         image_result = pyautogui.locateOnScreen(image_name, confidence=constants.DEFAULT_CONFIDENCE)
         while image_result is None:
             pyautogui.scroll(-scroll_size, x=constants.INITIAL_MOUSE_POSITION_X, y=constants.INITIAL_MOUSE_POSITION_Y)
@@ -74,7 +72,7 @@ class UiControl:
             print("Scrolling for find - " + image_name)
             image_result = pyautogui.locateOnScreen(image_name, confidence=constants.DEFAULT_CONFIDENCE)
 
-        pyautogui.click(image_result)
+        self.click_on_image(image_result)
         time.sleep(constants.CLICK_IMAGE_DELAY)
         return image_result
 
@@ -100,11 +98,12 @@ class UiControl:
         while True:
             pos_x, pos_y = pyautogui.position()
             print("PosX - " + str(pos_x) + " | PosY - " + str(pos_y))
-            time.sleep(constants.CLICK_IMAGE_DELAY)
+            time.sleep(constants.DEBUG_MOUSE_UPDATE_DELAY)
 
     @staticmethod
     def read_text_in_region(region):
         image = pyautogui.screenshot(region=region)
+        image.save("image" + str(random.randrange(10,20)) + ".png")
         return pytesseract.image_to_string(image)
 
 
