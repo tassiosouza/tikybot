@@ -30,7 +30,7 @@ class UiControl:
                 pyautogui.click(image)
             time.sleep(constants.CLICK_IMAGE_DELAY)
         else:
-            print("Could not find button image - " + image)
+            print("Could not find button image")
 
     @staticmethod
     def click_on_position(position):
