@@ -71,7 +71,7 @@ class Tikybot():
     def debug_mouse_position(self):
         self.ui_control.debug_mouse_position()
 
-    def follow_user_followers(self, username, amount):
+    def follow_user_followers(self, username, amount, delay):
 
         print("Performing following followers...")
 
@@ -105,6 +105,7 @@ class Tikybot():
                 if(username is not "" and userid is not ""):
                     self.ui_control.click_on_image(success)
                     current_follow_count += 1
+                    time.sleep(delay)
 
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
@@ -144,3 +145,21 @@ class Tikybot():
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
         self.ui_control.click_on_position(constants.HOME_BUTTON)
+
+    def comment_on_feed(self, comments, amount, delay):
+
+        print("Performing comments on public feed")
+
+        current_comment_count = 0
+
+        while current_comment_count < amount:
+            self.ui_control.click_on_image_file(constants.BUTTON_FEED_COMMENT)
+            self.ui_control.click_on_position(constants.COMMENT_BAR_ON_FEED)
+            comments_size = len(comments)
+            sorted_index = random.randrange(0, comments_size)
+            self.ui_control.write(comments[sorted_index])
+            self.ui_control.click_on_position(constants.SEND_COMMENT_BUTTON)
+            self.ui_control.click_on_position(constants.ANDROID_BACK_BUTTON)
+            self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
+            current_comment_count += 1
+            time.sleep(delay)
