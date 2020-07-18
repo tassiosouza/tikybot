@@ -103,7 +103,6 @@ class UiControl:
     @staticmethod
     def read_text_in_region(region):
         image = pyautogui.screenshot(region=region)
-        image.save("image" + str(random.randrange(10,20)) + ".png")
         return pytesseract.image_to_string(image)
 
 

@@ -106,6 +106,9 @@ class Tikybot():
                     self.ui_control.click_on_image(success)
                     current_follow_count += 1
                     time.sleep(delay)
+                else:
+                    self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE * 2)
+                    continue
 
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
