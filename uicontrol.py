@@ -17,7 +17,13 @@ class UiControl:
 
     def click_on_image_file(self, image_name):
         button = pyautogui.locateOnScreen(image_name, confidence=0.8)
-        self.click_on_image(button)
+        if button is not None:
+            self.click_on_image(button)
+            return button
+        else:
+            print("Could not find button image - " + image_name)
+            return None
+
 
     def click_on_image(self, image):
         time.sleep(constants.CLICK_IMAGE_DELAY)
@@ -29,8 +35,9 @@ class UiControl:
             else:
                 pyautogui.click(image)
             time.sleep(constants.CLICK_IMAGE_DELAY)
+            return image
         else:
-            print("Could not find button image")
+            return None
 
     @staticmethod
     def click_on_position(position):

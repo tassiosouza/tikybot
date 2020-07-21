@@ -1,8 +1,27 @@
 from tikybot import Tikybot
 import time
 import random
+#from repository import Repository
 
+# database = Repository()
 tikybot = Tikybot()
+#
+# database.create_database()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 current_follow_count = 0
 max_follow_count = 200
@@ -37,13 +56,13 @@ while current_comment_count < max_comment_count and current_follow_count < max_f
     time.sleep(random.randrange(5, 8))
 
     # Watch some videos
-    videos_increment = random.randrange(3, 6)
+    videos_increment = random.randrange(2, 4)
     tikybot.watch_feed_videos(videos_increment)
 
     time.sleep(random.randrange(5, 8))
 
     # Perform comment
-    comment_increment = random.randrange(6, 9)
+    comment_increment = random.randrange(4, 6)
     comment_delay = random.randrange(3, 5)
     if current_comment_count < max_comment_count:
         tikybot.comment_on_feed(["Muito bom !!", "Perfeito :)",
@@ -56,17 +75,17 @@ while current_comment_count < max_comment_count and current_follow_count < max_f
     print("Follow count -> " + str(current_follow_count))
     print("Comment count -> " + str(current_comment_count))
     print("#########################")
-
-
-
-# tikybot.logout()
-
-# while True:
-
-#     tikybot.watch_feed_videos(3)
-
-#tikybot.debug_mouse_position()
-#tikybot.like_by_hashtag("recife")
+#
+#
+#
+# # tikybot.logout()
+#
+# # while True:
+#
+# #     tikybot.watch_feed_videos(3)
+#
+# #tikybot.debug_mouse_position()
+# #tikybot.like_by_hashtag("recife")
 
 
 

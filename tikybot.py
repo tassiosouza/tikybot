@@ -82,6 +82,7 @@ class Tikybot():
 
         time.sleep(constants.WAIT_FOR_SEARCH_USER_RESULTS)
         self.ui_control.click_on_position(constants.FIRST_USER_IN_LIST)
+        time.sleep(constants.CLICK_DELAY)
         self.ui_control.click_on_position(constants.FOLLOWERS_BUTTON)
         time.sleep(constants.WAIT_FOR_FOLLOWERS_RESULT)
 
@@ -109,6 +110,8 @@ class Tikybot():
                 else:
                     self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE * 2)
                     continue
+            else:
+                continue
 
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
@@ -156,7 +159,7 @@ class Tikybot():
         current_comment_count = 0
 
         while current_comment_count < amount:
-            self.ui_control.click_on_image_file(constants.BUTTON_FEED_COMMENT)
+            self.ui_control.click_on_position(constants.COMMENT_BUTTON)
             self.ui_control.click_on_position(constants.COMMENT_BAR_ON_FEED)
             comments_size = len(comments)
             sorted_index = random.randrange(0, comments_size)
@@ -166,3 +169,4 @@ class Tikybot():
             self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
             current_comment_count += 1
             time.sleep(delay)
+
