@@ -2,6 +2,7 @@ from uicontrol import UiControl
 import constants
 import time
 import random
+from datetime import datetime
 
 class Tikybot():
 
@@ -71,7 +72,7 @@ class Tikybot():
     def debug_mouse_position(self):
         self.ui_control.debug_mouse_position()
 
-    def follow_user_followers(self, username, amount, delay):
+    def follow_user_followers(self, username, delay, timeout):
 
         print("Performing following followers...")
 
@@ -87,7 +88,12 @@ class Tikybot():
         time.sleep(constants.WAIT_FOR_FOLLOWERS_RESULT)
 
         current_follow_count = 0
-        while current_follow_count < amount:
+        initial_time = datetime.now()
+        current_time = datetime.now()
+
+        seconds_diff = current_time - initial_time
+
+        while seconds_diff.seconds < timeout:
             success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOW, constants.DEFAULT_SCROLL_SIZE)
             if success:
                 #Get userid
@@ -109,24 +115,32 @@ class Tikybot():
                     time.sleep(delay)
                 else:
                     self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE * 2)
-                    continue
-            else:
-                continue
 
-        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
-        self.ui_control.click_on_position(constants.HOME_BUTTON)
+            current_time = datetime.now()
+            seconds_diff = current_time - initial_time
 
-    def watch_feed_videos(self, amount):
+        self.back_to_home()
+        return current_follow_count
 
-        print("Performing whatch videos for amount >>" + str(amount) + "<< ...")
+    def watch_feed_videos(self, timeout):
 
-        current_count = 0
-        while current_count < amount:
+        print("Performing watch videos on feed")
+
+        current_watch_count = 0
+        initial_time = datetime.now()
+        current_time = datetime.now()
+
+        seconds_diff = current_time - initial_time
+
+        while seconds_diff.seconds < timeout:
             self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
             time.sleep(random.randrange(constants.RANDOM_MIN_WAIT_WATCH_VIDEO, constants.RANDOM_MAX_WAIT_WATCH_VIDEO))
-            current_count += 1
+            current_watch_count += 1
+            current_time = datetime.now()
+            seconds_diff = current_time - initial_time
+
+        self.back_to_home()
+        return current_watch_count
 
     def like_by_hashtag(self, hashtag):
 
@@ -152,21 +166,92 @@ class Tikybot():
         self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
         self.ui_control.click_on_position(constants.HOME_BUTTON)
 
-    def comment_on_feed(self, comments, amount, delay):
+    def comment_on_feed(self, comments, delay, timeout):
 
         print("Performing comments on public feed")
 
         current_comment_count = 0
+        initial_time = datetime.now()
+        current_time = datetime.now()
 
-        while current_comment_count < amount:
+        seconds_diff = current_time - initial_time
+
+        while seconds_diff.seconds < timeout:
             self.ui_control.click_on_position(constants.COMMENT_BUTTON)
             self.ui_control.click_on_position(constants.COMMENT_BAR_ON_FEED)
             comments_size = len(comments)
             sorted_index = random.randrange(0, comments_size)
             self.ui_control.write(comments[sorted_index])
             self.ui_control.click_on_position(constants.SEND_COMMENT_BUTTON)
+            current_comment_count += 1
             self.ui_control.click_on_position(constants.ANDROID_BACK_BUTTON)
             self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
-            current_comment_count += 1
+
+            current_time = datetime.now()
+            seconds_diff = current_time - initial_time
             time.sleep(delay)
+
+        self.back_to_home()
+        return current_comment_count
+
+    def random_scroll_up(self):
+
+        random_number = random.randrange(2, 7)
+        for x in range(1, random_number):
+            self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
+
+
+    def like_followers_of(self, username, delay, timeout):
+
+        print("Performing liking followers...")
+
+        self.ui_control.click_on_position(constants.DISCOVER_BUTTON)
+        self.ui_control.click_on_position(constants.SEARCH_BAR)
+        self.ui_control.write(username)
+        self.ui_control.click_on_position(constants.SEARCH_BUTTON)
+
+        time.sleep(constants.WAIT_FOR_SEARCH_USER_RESULTS)
+        self.ui_control.click_on_position(constants.FIRST_USER_IN_LIST)
+        time.sleep(constants.CLICK_DELAY)
+        self.ui_control.click_on_position(constants.FOLLOWERS_BUTTON)
+        time.sleep(constants.WAIT_FOR_FOLLOWERS_RESULT)
+
+        current_like_amount = 0
+        initial_time = datetime.now()
+        current_time = datetime.now()
+
+        seconds_diff = current_time - initial_time
+
+        while seconds_diff.seconds < timeout:
+            self.random_scroll_up()
+            self.ui_control.click_on_position(constants.FIRST_USER_IN_FOLLOWERS_LIST)
+
+            has_post = self.ui_control.find_image(constants.ICON_MINI_PLAY)
+            if has_post:
+                self.ui_control.click_on_position(constants.FIRST_POST_ON_USER_FEED)
+                self.ui_control.click_on_position(constants.LIKE_BUTTON)
+                current_like_amount += 1
+                self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+                self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+            else:
+                self.ui_control.click_on_position(constants.TOP_BACK_BUTTON)
+
+            current_time = datetime.now()
+            seconds_diff = current_time - initial_time
+
+            time.sleep(delay)
+
+        self.back_to_home()
+        return current_like_amount
+
+
+    def back_to_home(self):
+
+        home_button = self.ui_control.find_image(constants.BUTTON_HOME)
+        while home_button is None:
+            self.ui_control.click_on_position(constants.ANDROID_BACK_BUTTON)
+            home_button = self.ui_control.find_image(constants.BUTTON_HOME)
+
+
+
 
