@@ -4,10 +4,12 @@ import time
 import random
 from datetime import datetime
 
+LOGIN_OPERATION = "LOGIN"
+
 class Tikybot():
 
-    def __init__(self, x=0):
-        self.x = x
+    def __init__(self, server):
+        self.server = server
         self.ui_control = UiControl()
         self.ui_control.focus(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y)
 
@@ -18,6 +20,7 @@ class Tikybot():
         self.ui_control.click_on_position(constants.PROFILE_BUTTON)
         self.ui_control.click_on_position(constants.SIGNUP_BUTTON)
         self.ui_control.click_on_image_file(constants.BUTTON_ADD_ACCOUNT)
+        time.sleep(3)
         self.ui_control.click_on_position(constants.USERNAME_BUTTON)
         self.ui_control.click_on_position(constants.EMAIL_BUTTON)
 
@@ -28,14 +31,27 @@ class Tikybot():
         self.ui_control.click_on_position(constants.LOGIN_BUTTON)
         time.sleep(constants.WAIT_FOR_CAPTCHA)
 
-        # verify login
-        home_button = self.ui_control.find_image(constants.BUTTON_HOME)
+        if(self.verify_operation(LOGIN_OPERATION, username)):
+            return True;
+        else:
+            self.ui_control.click_on_position(constants.LOGIN_BUTTON)
 
-        if home_button is not None:
-            print("Successfully logged in")
-            return True
+        if(self.verify_operation(LOGIN_OPERATION, username)):
+            return True;
 
-        return self.bypass_verification()
+        self.bypass_verification()
+
+        if (self.verify_operation(LOGIN_OPERATION, username)):
+            return True;
+
+        self.back_to_home()
+
+        return False
+
+    def save_profile_pic(self, username):
+        img = self.ui_control.print_screen((136,245, 120,105))
+        self.server.save_file(username + '.png', img)
+
 
     def bypass_verification(self, attempts_number=constants.CAPTCHA_ATTEMPT_COUNT):
 
@@ -52,11 +68,18 @@ class Tikybot():
                 if result is not None and constants.CAPTCHA_MIN_X < result.left < constants.CAPTCHA_MAX_X\
                         and constants.CAPTCHA_MIN_Y < result.top < constants.CAPTCHA_MAX_Y:
                     self.ui_control.drag_and_drop(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y,
-                                                  result.left, constants.INITIAL_MOUSE_POSITION_Y)
-                    print("Successfully logged in")
-                    return True
+                                                  result.left - 10, constants.INITIAL_MOUSE_POSITION_Y)
+                    time.sleep(constants.WAIT_FOR_CAPTCHA)
 
-            self.ui_control.click_on_image_file(constants.BUTTON_CAPTCHA_REFRESH)
+                    # verify login
+                    home_button = self.ui_control.find_image(constants.BUTTON_HOME)
+                    if home_button is not None:
+                        print("Successfully logged in")
+                        return True
+                    else:
+                        self.ui_control.click_on_position(constants.CAPTCHA_REFRESH_BUTTON)
+
+            self.ui_control.click_on_position(constants.CAPTCHA_REFRESH_BUTTON)
             current_attempt += 1
 
         return False
@@ -66,7 +89,9 @@ class Tikybot():
         print("Performing logout...")
         self.ui_control.click_on_position(constants.PROFILE_BUTTON)
         self.ui_control.click_on_position(constants.OPTION_BUTTON)
-        self.ui_control.scroll_for_click(constants.BUTTON_LOGOUT, constants.DEFAULT_SCROLL_SIZE)
+        self.ui_control.scroll_for_click(constants.BUTTON_LOGOUT)
+        if(self.ui_control.find_image(constants.MESSAGE_LOGIN_INFO)):
+            self.ui_control.click_on_position(constants.SAVE_LOGIN_INFO_BUTTON)
         self.ui_control.click_on_position(constants.LOGOUT_BUTTON)
 
     def debug_mouse_position(self):
@@ -94,27 +119,27 @@ class Tikybot():
         seconds_diff = current_time - initial_time
 
         while seconds_diff.seconds < timeout:
-            success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOW, constants.DEFAULT_SCROLL_SIZE)
+            success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOW)
             if success:
                 #Get userid
-                userid_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
-                                 success.top - constants.REGION_Y_OFFSET_USERID,
-                                 constants.REGION_WIDTH, constants.REGION_HEIGHT)
-                userid = self.ui_control.read_text_in_region(userid_region)
-                print("username - " + userid)
-                #get username
-                username_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
-                                   success.top + constants.REGION_Y_OFFSET_USERNAME,
-                                   constants.REGION_WIDTH, constants.REGION_HEIGHT)
-                username = self.ui_control.read_text_in_region(username_region)
-                print("name - " + username)
+                # userid_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
+                #                  success.top - constants.REGION_Y_OFFSET_USERID,
+                #                  constants.REGION_WIDTH, constants.REGION_HEIGHT)
+                # userid = self.ui_control.read_text_in_region(userid_region)
+                # print("username - " + userid)
+                # #get username
+                # username_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
+                #                    success.top + constants.REGION_Y_OFFSET_USERNAME,
+                #                    constants.REGION_WIDTH, constants.REGION_HEIGHT)
+                # username = self.ui_control.read_text_in_region(username_region)
+                # print("name - " + username)
 
-                if(username is not "" and userid is not ""):
+                if(True):
                     self.ui_control.click_on_image(success)
                     current_follow_count += 1
                     time.sleep(delay)
                 else:
-                    self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE * 2)
+                    self.ui_control.scroll_screen_up()
 
             current_time = datetime.now()
             seconds_diff = current_time - initial_time
@@ -133,7 +158,7 @@ class Tikybot():
         seconds_diff = current_time - initial_time
 
         while seconds_diff.seconds < timeout:
-            self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
+            self.ui_control.scroll_screen_up()
             time.sleep(random.randrange(constants.RANDOM_MIN_WAIT_WATCH_VIDEO, constants.RANDOM_MAX_WAIT_WATCH_VIDEO))
             current_watch_count += 1
             current_time = datetime.now()
@@ -185,7 +210,7 @@ class Tikybot():
             self.ui_control.click_on_position(constants.SEND_COMMENT_BUTTON)
             current_comment_count += 1
             self.ui_control.click_on_position(constants.ANDROID_BACK_BUTTON)
-            self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
+            self.ui_control.scroll_screen_up()
 
             current_time = datetime.now()
             seconds_diff = current_time - initial_time
@@ -198,7 +223,7 @@ class Tikybot():
 
         random_number = random.randrange(2, 7)
         for x in range(1, random_number):
-            self.ui_control.scroll_screen_up(constants.DEFAULT_SCROLL_SIZE)
+            self.ui_control.scroll_screen_up()
 
 
     def like_followers_of(self, username, delay, timeout):
@@ -253,5 +278,39 @@ class Tikybot():
             home_button = self.ui_control.find_image(constants.BUTTON_HOME)
 
 
+    def unfollow(self, timeout):
+
+        print("Performing unfollow... ")
+
+        self.ui_control.click_on_position(constants.PROFILE_BUTTON)
+        self.ui_control.click_on_position(constants.FOLLOWING_NUMBERS_BUTTON)
+
+        initial_time = datetime.now()
+        current_time = datetime.now()
+
+        seconds_diff = current_time - initial_time
+
+        while seconds_diff.seconds < timeout:
+            success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOWING, delay=0, grayscale=True)
+            if success:
+                self.ui_control.click_on_image(success, 0)
+
+            current_time = datetime.now()
+            seconds_diff = current_time - initial_time
+
+        self.back_to_home()
+
+    def verify_operation(self, operation, username=''):
+
+        if(operation == LOGIN_OPERATION):
+            time.sleep(3)
+            self.ui_control.click_on_position(constants.PROFILE_BUTTON)
+            success = self.ui_control.find_image(constants.BUTTON_EDIT_PROFILE)
+            if(success):
+                self.save_profile_pic(username)
+                self.back_to_home()
+                return True;
+
+        return False;
 
 
