@@ -11,9 +11,10 @@ class Tikybot():
     def __init__(self, server):
         self.server = server
         self.ui_control = UiControl()
-        self.ui_control.focus(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y)
 
-    def login(self, username, password):
+    def login(self, username, password, uid):
+
+        self.ui_control.focus(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y)
 
         print("Performing login for account " + username + "...")
 
@@ -32,25 +33,42 @@ class Tikybot():
         time.sleep(constants.WAIT_FOR_CAPTCHA)
 
         if(self.verify_operation(LOGIN_OPERATION, username)):
+            self.update_user_info(uid, username)
             return True;
         else:
             self.ui_control.click_on_position(constants.LOGIN_BUTTON)
 
         if(self.verify_operation(LOGIN_OPERATION, username)):
+            self.update_user_info(uid, username)
             return True;
 
         self.bypass_verification()
 
         if (self.verify_operation(LOGIN_OPERATION, username)):
+            self.update_user_info(uid, username)
             return True;
 
         self.back_to_home()
+        self.server.save_user_info(uid, 'authState', 'failed')
 
         return False
 
-    def save_profile_pic(self, username):
-        img = self.ui_control.print_screen((136,245, 120,105))
+    def update_user_info(self, uid, username):
+
+        #Update Profile URL
+        photoUrl = 'https://firebasestorage.googleapis.com/v0/b/tikybot-wordpress.appspot.com/o/' + username + \
+                   '.png?alt=media&token=77e4f2db-dd8e-4ba5-99f0-58a3878b5f1e'
+        img = self.ui_control.print_screen((145, 240, 110, 110))
         self.server.save_file(username + '.png', img)
+
+        #Set followers, following and likes
+        self.server.save_user_info(uid, 'followersCount', 2701)
+        self.server.save_user_info(uid, 'followingCount', 2401)
+        self.server.save_user_info(uid, 'likesCount', 141)
+
+        #Set user state success and profile pic url
+        self.server.save_user_info(uid, 'tiktokPhotoURL', photoUrl)
+        self.server.save_user_info(uid, 'authState', 'success')
 
 
     def bypass_verification(self, attempts_number=constants.CAPTCHA_ATTEMPT_COUNT):
@@ -307,8 +325,6 @@ class Tikybot():
             self.ui_control.click_on_position(constants.PROFILE_BUTTON)
             success = self.ui_control.find_image(constants.BUTTON_EDIT_PROFILE)
             if(success):
-                self.save_profile_pic(username)
-                self.back_to_home()
                 return True;
 
         return False;

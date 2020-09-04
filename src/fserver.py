@@ -1,34 +1,35 @@
-from firebase import firebase
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import storage
+from firebase_admin import db
 import os
 
 CURRENT_DIRECTORY_PATH = '/Users/Tassio/tikybot/src/'
 SERVICE_ACCOUNT_KEY_PATH = '../serviceAccountKey.json'
 STORAGE_BUCKET_NAME = 'tikybot-wordpress.appspot.com'
 FIREBASE_REALTIME_DATABASE_URL = 'https://tikybot-wordpress.firebaseio.com'
+
 class Server():
 
     def __init__(self, x=0):
         self.x = x
 
-        #******************* Cloud Storage *******************
         self.cred = credentials.Certificate(SERVICE_ACCOUNT_KEY_PATH)
         firebase_admin.initialize_app(self.cred, {
-            'storageBucket': STORAGE_BUCKET_NAME
+            'storageBucket': STORAGE_BUCKET_NAME,
+            'databaseURL': FIREBASE_REALTIME_DATABASE_URL
         })
         self.bucket = storage.bucket()
-
-        #******************** Realtime Database *****************
-        self.firebase = firebase.FirebaseApplication(FIREBASE_REALTIME_DATABASE_URL, None)
+        self.database_ref = db.reference('/users')
 
     def get_accounts(self):
-        result = self.firebase.get('/users', None)
+        users = self.database_ref.get()
         account_list = []
-        for key, value in result.items():
-            temp = value
-            account_list.append(temp)
+        if(users != None):
+            for key, value in users.items():
+                temp = value
+                temp['uid'] = key
+                account_list.append(temp)
 
         return account_list
 
@@ -44,3 +45,8 @@ class Server():
         blob.upload_from_filename(CURRENT_DIRECTORY_PATH + file_name)
 
         os.remove(CURRENT_DIRECTORY_PATH + file_name)
+
+    def save_user_info(self, uid, info_name, value):
+        user = self.database_ref.child(uid)
+        user.child(info_name).set(value)
+        return True
