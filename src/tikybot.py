@@ -42,11 +42,11 @@ class Tikybot():
             self.update_user_info(uid, username)
             return True;
 
-        self.bypass_verification()
-
-        if (self.verify_operation(LOGIN_OPERATION, username)):
-            self.update_user_info(uid, username)
-            return True;
+        # self.bypass_verification()
+        #
+        # if (self.verify_operation(LOGIN_OPERATION, username)):
+        #     self.update_user_info(uid, username)
+        #     return True;
 
         self.back_to_home()
         self.server.save_user_info(uid, 'authState', 'failed')
@@ -62,9 +62,12 @@ class Tikybot():
         self.server.save_file(username + '.png', img)
 
         #Set followers, following and likes
-        self.server.save_user_info(uid, 'followersCount', 2701)
-        self.server.save_user_info(uid, 'followingCount', 2401)
-        self.server.save_user_info(uid, 'likesCount', 141)
+        follower_count = self.ui_control.read_text_in_region((70,385, 70, 20))
+        self.server.save_user_info(uid, 'followersCount', follower_count)
+        following_count = self.ui_control.read_text_in_region((174, 385, 70, 20))
+        self.server.save_user_info(uid, 'followingCount', following_count)
+        likes_count = self.ui_control.read_text_in_region((270, 385, 70, 20))
+        self.server.save_user_info(uid, 'likesCount', likes_count)
 
         #Set user state success and profile pic url
         self.server.save_user_info(uid, 'tiktokPhotoURL', photoUrl)
@@ -111,6 +114,7 @@ class Tikybot():
         if(self.ui_control.find_image(constants.MESSAGE_LOGIN_INFO)):
             self.ui_control.click_on_position(constants.SAVE_LOGIN_INFO_BUTTON)
         self.ui_control.click_on_position(constants.LOGOUT_BUTTON)
+        time.sleep(1)
 
     def debug_mouse_position(self):
         self.ui_control.debug_mouse_position()
@@ -139,25 +143,9 @@ class Tikybot():
         while seconds_diff.seconds < timeout:
             success = self.ui_control.scroll_for_find(constants.BUTTON_FOLLOW)
             if success:
-                #Get userid
-                # userid_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
-                #                  success.top - constants.REGION_Y_OFFSET_USERID,
-                #                  constants.REGION_WIDTH, constants.REGION_HEIGHT)
-                # userid = self.ui_control.read_text_in_region(userid_region)
-                # print("username - " + userid)
-                # #get username
-                # username_region = (success.left/constants.RESOLUTION_FACTOR - constants.REGION_X_OFFSET,
-                #                    success.top + constants.REGION_Y_OFFSET_USERNAME,
-                #                    constants.REGION_WIDTH, constants.REGION_HEIGHT)
-                # username = self.ui_control.read_text_in_region(username_region)
-                # print("name - " + username)
-
-                if(True):
-                    self.ui_control.click_on_image(success)
-                    current_follow_count += 1
-                    time.sleep(delay)
-                else:
-                    self.ui_control.scroll_screen_up()
+                self.ui_control.click_on_image(success)
+                current_follow_count += 1
+                time.sleep(delay)
 
             current_time = datetime.now()
             seconds_diff = current_time - initial_time
