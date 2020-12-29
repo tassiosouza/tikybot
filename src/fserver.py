@@ -3,6 +3,7 @@ from firebase_admin import credentials
 from firebase_admin import storage
 from firebase_admin import db
 import os
+from datetime import date
 
 CURRENT_DIRECTORY_PATH = '/Users/Tassio/tikybot/src/'
 SERVICE_ACCOUNT_KEY_PATH = '../serviceAccountKey.json'
@@ -20,10 +21,13 @@ class Server():
             'databaseURL': FIREBASE_REALTIME_DATABASE_URL
         })
         self.bucket = storage.bucket()
-        self.database_ref = db.reference('/users')
+        self.database_ref_users = db.reference('/users')
+        self.database_ref_sessions = db.reference('/sessions')
 
+
+    ################### USERS #####################
     def get_accounts(self):
-        users = self.database_ref.get()
+        users = self.database_ref_users.get()
         account_list = []
         if(users != None):
             for key, value in users.items():
@@ -47,6 +51,25 @@ class Server():
         os.remove(CURRENT_DIRECTORY_PATH + file_name)
 
     def save_user_info(self, uid, info_name, value):
-        user = self.database_ref.child(uid)
+        user = self.database_ref_users.child(uid)
         user.child(info_name).set(value)
+        return True
+
+    ########################  SESSION  ######################
+
+    def get_current_session(self):
+        sessions = self.database_ref_sessions.get()
+        today = date.today().strftime("%d%m%Y")
+
+        if sessions and today in sessions:
+            return sessions[today]
+        else:
+            self.database_ref_sessions.child(today).child('users').child("first").set("session_start")
+            sessions = self.database_ref_sessions.get()
+            return sessions[today]
+
+    def save_session_info(self, uid, info_name, value):
+        today = date.today().strftime("%d%m%Y")
+        session = self.database_ref_sessions.child(today)
+        session.child('users').child(uid).child(info_name).set(value)
         return True

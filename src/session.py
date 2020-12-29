@@ -13,6 +13,8 @@ class Session:
         self.server = Server()
         self.users = self.server.get_accounts()
         self.tikybot = Tikybot(self.server)
+        self.session = self.server.get_current_session()
+
 
     def update_users(self):
         self.users = self.server.get_accounts()
@@ -36,6 +38,9 @@ class Session:
                     else:
                         self.session_next()
                         continue
+                else:
+                    self.session_next()
+                    continue
 
             else:
                 print('Nenhuma conta registrada')
@@ -71,7 +76,7 @@ class Session:
 
     def session_follow(self):
 
-        timeout = random.randrange(30, 100)
+        timeout = random.randrange(5, 10)
         follow_increment = self.tikybot.follow_user_followers(self.get_random_famous(), 0, timeout)
         time.sleep(random.randrange(1, 3))
 

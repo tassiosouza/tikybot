@@ -11,10 +11,9 @@ class Tikybot():
     def __init__(self, server):
         self.server = server
         self.ui_control = UiControl()
+        self.ui_control.focus(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y)
 
     def login(self, username, password, uid):
-
-        self.ui_control.focus(constants.INITIAL_MOUSE_POSITION_X, constants.INITIAL_MOUSE_POSITION_Y)
 
         print("Performing login for account " + username + "...")
 
@@ -63,11 +62,16 @@ class Tikybot():
 
         #Set followers, following and likes
         follower_count = self.ui_control.read_text_in_region((70,385, 70, 20))
-        self.server.save_user_info(uid, 'followersCount', follower_count)
+        self.server.save_user_info(uid, 'followingCount', follower_count)
+        self.server.save_session_info(uid, 'followingCount', follower_count)
+
         following_count = self.ui_control.read_text_in_region((174, 385, 70, 20))
-        self.server.save_user_info(uid, 'followingCount', following_count)
+        self.server.save_user_info(uid, 'followersCount', following_count)
+        self.server.save_session_info(uid, 'followersCount', following_count)
+
         likes_count = self.ui_control.read_text_in_region((270, 385, 70, 20))
         self.server.save_user_info(uid, 'likesCount', likes_count)
+        self.server.save_session_info(uid, 'likesCount', likes_count)
 
         #Set user state success and profile pic url
         self.server.save_user_info(uid, 'tiktokPhotoURL', photoUrl)
@@ -114,7 +118,7 @@ class Tikybot():
         if(self.ui_control.find_image(constants.MESSAGE_LOGIN_INFO)):
             self.ui_control.click_on_position(constants.SAVE_LOGIN_INFO_BUTTON)
         self.ui_control.click_on_position(constants.LOGOUT_BUTTON)
-        time.sleep(1)
+        time.sleep(2)
 
     def debug_mouse_position(self):
         self.ui_control.debug_mouse_position()
